@@ -11,18 +11,21 @@
 		<select data-bind="css: classes('locale'), foreach:availableLocales, value: locale">
 			<option data-bind="value: $data.code, text:$data.name"></option>
 		</select>
+		<button data-bind="click: signOut"style="background-color: #ffcc00; color: black; border: none; padding: 0px 10px; cursor: pointer;">
+			Sign Out  <i class="fa fa-sign-out" aria-hidden="true"></i> <span data-bind="text: userName"></span>
+		</button>
 		<!-- /ko -->
 		<!-- ko if: isLoggedIn -->
 		<a data-bind="click: function () { $component.jobModalOpened(true) }"><i data-bind="css: {pending: jobNotificationsPending}" class="fa fa-bell"></i></a>
 		<!-- /ko -->
-		<div data-bind="if:appConfig.userAuthenticationEnabled===true" style="display: inline-block;">
+		<!-- <div data-bind="if:appConfig.userAuthenticationEnabled===true" style="display: inline-block;">
 			<div data-bind="title: ko.i18n('components.userBar.signin', 'Sign In'), if: !isLoggedIn() || tokenExpired()">
 				<span class="pipe">|</span><a data-bind="click: function () { $component.signInOpened(true) }"><i class="fa fa-sign-in-alt"></i><span data-bind="text: ko.i18n('components.userBar.signin', 'Sign In')"></span></a>
 			</div>
 			<div data-bind="title: ko.i18n('components.userBar.signout', 'Sign Out'), if: isLoggedIn() && !tokenExpired()">
 				<span class="pipe">|</span><a data-bind="click: function () { $component.signInOpened(true) }"><strong data-bind="text: fullName"></strong><i class="fa fa-user-circle fa-lg" aria-hidden="true"></i></a>
 			</div>
-		</div>
+		</div> -->
 	</div>
 	<!-- /ko -->
 </div>

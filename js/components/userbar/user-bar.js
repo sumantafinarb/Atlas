@@ -109,6 +109,59 @@ define([
 					console.warn('There isn\'t permission to post viewed notification');
 				}
 			});
+			this.msalConfig = {
+				auth: {
+					clientId: "f06cc2c2-be11-4a2e-9db7-f4c27147cc0e",
+					authority: "https://login.microsoftonline.com/7266b166-c08a-4bdf-babd-868d05984b80",
+					redirectUri: "http://localhost/atlas"
+				}
+			};
+
+			this.msalInstance = new msal.PublicClientApplication(this.msalConfig);
+
+			this.clearAllCookies = () => {
+				const cookies = document.cookie.split(";");
+			
+				for (let cookie of cookies) {
+					const eqPos = cookie.indexOf("=");
+					const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+					document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+				}
+			
+				sessionStorage.clear();
+			};
+			this.userName = ko.observable('');
+			this.initializeAuthStatus = async () => {
+				await this.msalInstance.handleRedirectPromise();
+				const accounts = this.msalInstance.getAllAccounts();
+				console.log(accounts)
+				if (accounts.length > 0) {
+					// Assuming the user's name is stored in the 'name' property
+					this.userName(accounts[0].name);
+				}
+			};
+			
+			// Call the initialize function
+			this.initializeAuthStatus();
+
+			
+			this.signOut = () => {
+				// Perform sign out operations
+				// this.isUserAuthenticated(false);
+				localStorage.clear();
+
+				// Clearing all cookies
+				this.clearAllCookies();
+			
+				// MSAL logout
+				this.msalInstance.logoutPopup().then(() => {
+					console.log('User logged out');
+					// Redirect to home page or login page after successful logout
+					window.location.href = '/';
+				}).catch(error => {
+					console.error('Error during logout:', error);
+				});
+			};
 
 			this.isLoggedIn = ko.computed(() => authApi.isAuthenticated());
 			this.isLoggedIn.subscribe((isLoggedIn) => {

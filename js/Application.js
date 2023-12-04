@@ -59,8 +59,67 @@ define(
 				this.initializationComplete = ko.pureComputed(() => {
 					return sharedState.appInitializationStatus() != constants.applicationStatuses.initializing;
 				});
+				var azureAdToken = localStorage.getItem('azureAd');
 
-				this.toggleBrowserWarning = function(bowser) {
+			
+				this.isUserAuthenticated = ko.observable(azureAdToken ? true : false);
+   				this.isAuthInitialized = ko.observable(azureAdToken ? false : true); 
+				this.msalConfig = {
+					auth: {
+						clientId: "f06cc2c2-be11-4a2e-9db7-f4c27147cc0e",
+						authority: "https://login.microsoftonline.com/7266b166-c08a-4bdf-babd-868d05984b80",
+						redirectUri: "http://localhost/atlas"
+					}
+				};
+
+				this.msalInstance = new msal.PublicClientApplication(this.msalConfig);
+				this.clearAllCookies = () => {
+					const cookies = document.cookie.split(";");
+				
+					for (let cookie of cookies) {
+						const eqPos = cookie.indexOf("=");
+						const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+						document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+					}
+				
+					sessionStorage.clear();
+				};
+				// Async function to initialize authentication status
+				this.initializeAuthStatus = async () => {
+					await this.msalInstance.handleRedirectPromise();
+					const accounts = this.msalInstance.getAllAccounts();
+					console.log(accounts)
+					this.isUserAuthenticated(accounts.length > 0);
+					if(accounts.length < 0){
+						this.clearAllCookies();
+					}
+					this.isAuthInitialized(true); 
+				};
+
+				// Call the initialize function
+				this.initializeAuthStatus();
+
+				this.signIn = () => {
+					this.msalInstance.loginPopup()
+						.then(response => {
+							console.log(response,"Token Response")
+							this.isUserAuthenticated(true);
+
+							localStorage.setItem('azureAd', JSON.stringify(response));
+
+							// Handle successful login
+						})
+						.catch(error => {
+							console.error(error);
+						});
+				};
+
+				
+
+				this.msalInstance = new msal.PublicClientApplication(this.msalConfig);
+
+				// Async function to initialize authentication status
+				this.toggleBrowserWarning = function (bowser) {
 					const browserInfo = bowser.getParser(navigator.userAgent).getBrowser();
 					const isBrowserSupported = browserInfo.name.toLowerCase() === 'chrome' && parseInt(browserInfo.version) > 63;
 					return !config.disableBrowserCheck && !isBrowserSupported;
@@ -70,7 +129,7 @@ define(
 				this.noSourcesAvailable = ko.pureComputed(() => {
 					return this.appInitializationStatus() === constants.applicationStatuses.noSourcesAvailable && this.router.currentView() !== 'ohdsi-configuration';
 				});
-				this.appInitializationErrorMessage =  ko.computed(() => {
+				this.appInitializationErrorMessage = ko.computed(() => {
 					if (this.noSourcesAvailable()) {
 						return ko.i18n('commonErrors.noSources', 'The current WebAPI has no sources defined.<br/>Please add one or more on <a href="#/configure">configuration</a> page.')();
 					} else if (this.appInitializationStatus() !== constants.applicationStatuses.noSourcesAvailable) {
@@ -103,6 +162,7 @@ define(
 			 * @returns Promise
 			*/
 			bootstrap() {
+				
 				const promise = new Promise(async (resolve, reject) => {
 					$.support.cors = true;
 					sharedState.appInitializationStatus(ko.observable(constants.applicationStatuses.initializing));
@@ -114,7 +174,7 @@ define(
 					httpService.setUnauthorizedHandler(() => authApi.resetAuthParams());
 					httpService.setUserTokenGetter(() => authApi.getAuthorizationHeader());
 
-					try{
+					try {
 						await i18nService.getAvailableLocales();
 					} catch (e) {
 						reject(e.message);
