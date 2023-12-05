@@ -135,15 +135,15 @@ define([
 			this.userName = ko.observable(azureAdToken ? JSON.parse(azureAdToken).account.name: '');
 			
 
-			this.initializeAuthStatus = async () => {
-				await this.msalInstance.handleRedirectPromise();
-				const accounts = this.msalInstance.getAllAccounts();
-				console.log(accounts)
-				if (accounts.length > 0) {
-					// Assuming the user's name is stored in the 'name' property
-					this.userName(accounts[0].name);
-				}
-			};
+			// this.initializeAuthStatus = async () => {
+			// 	await this.msalInstance.handleRedirectPromise();
+			// 	const accounts = this.msalInstance.getAllAccounts();
+			// 	console.log(accounts)
+			// 	if (accounts.length > 0) {
+			// 		// Assuming the user's name is stored in the 'name' property
+			// 		this.userName(accounts[0].name);
+			// 	}
+			// };
 			
 			// Call the initialize function
 			this.initializeAuthStatus();
