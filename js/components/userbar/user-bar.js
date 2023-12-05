@@ -146,7 +146,7 @@ define([
 			// };
 			
 			// Call the initialize function
-			this.initializeAuthStatus();
+			// this.initializeAuthStatus();
 
 			
 			this.signOut = () => {
