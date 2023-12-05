@@ -130,7 +130,11 @@ define([
 			
 				sessionStorage.clear();
 			};
-			this.userName = ko.observable('');
+			
+			var azureAdToken = localStorage.getItem('azureAd');
+			this.userName = ko.observable(azureAdToken ? JSON.parse(azureAdToken).account.name: '');
+			
+
 			this.initializeAuthStatus = async () => {
 				await this.msalInstance.handleRedirectPromise();
 				const accounts = this.msalInstance.getAllAccounts();

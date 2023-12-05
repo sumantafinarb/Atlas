@@ -107,7 +107,6 @@ define(
 
 							localStorage.setItem('azureAd', JSON.stringify(response));
 
-							// Handle successful login
 						})
 						.catch(error => {
 							console.error(error);
